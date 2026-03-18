@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ site.title }}</title>
+    <meta name="description" content="{{ site.description }}" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖼️</text></svg>" />
+    <link rel="stylesheet" href="{{ '/src/css/style.css' | url }}" />
+    {% if site.theme %}
+    <style>
+      :root {
+        {% if site.theme.accent %}--accent: {{ site.theme.accent }};{% endif %}
+      }
+      html.dark {
+        {% if site.theme.bg %}--bg: {{ site.theme.bg }};{% endif %}
+        {% if site.theme.surface %}--surface: {{ site.theme.surface }};{% endif %}
+        {% if site.theme.border %}--border: {{ site.theme.border }};{% endif %}
+        {% if site.theme.text %}--text: {{ site.theme.text }};{% endif %}
+        {% if site.theme.textMuted %}--text-muted: {{ site.theme.textMuted }};{% endif %}
+      }
+    </style>
+    {% endif %}
+    <script>
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme === "light") document.documentElement.classList.remove("dark");
+    </script>
+  </head>
+  <body>
+    <a href="#wallpaper-gallery" class="skip-link">Skip to wallpaper gallery</a>
+    <div class="app-shell">
+      <header class="site-header" role="banner">
+        <div class="header-brand">
+          <span class="header-icon" aria-hidden="true">🖼️</span>
+          <h1 class="header-title">{{ site.title }}</h1>
+        </div>
+        <nav class="header-nav" aria-label="Site controls">
+          <button id="theme-toggle" type="button" class="btn-icon" aria-label="Toggle dark mode">
+            <span id="theme-icon" aria-hidden="true">☀️</span>
+          </button>
+        </nav>
+      </header>
+      <main id="wallpaper-gallery" class="main-content">
+        {{ content | safe }}
+      </main>
+    </div>
+    <script type="module" src="{{ '/src/js/wallpaper-card.js' | url }}"></script>
+    <script type="module" src="{{ '/src/js/wallpaper-filters.js' | url }}"></script>
+    <script type="module" src="{{ '/src/js/wallpaper-lightbox.js' | url }}"></script>
+    <script type="module" src="{{ '/src/js/wallpaper-gallery.js' | url }}"></script>
+    <script>
+      const root = document.documentElement;
+      const toggle = document.getElementById("theme-toggle");
+      const icon = document.getElementById("theme-icon");
+      function syncThemeIcon() {
+        if (icon) icon.textContent = root.classList.contains("dark") ? "☀️" : "🌙";
+      }
+      syncThemeIcon();
+      toggle?.addEventListener("click", () => {
+        const isDark = root.classList.toggle("dark");
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+        syncThemeIcon();
+      });
+    </script>
+  </body>
+</html>

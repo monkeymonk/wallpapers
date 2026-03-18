@@ -1,0 +1,25 @@
+---
+layout: base.njk
+---
+
+<wallpaper-gallery data-base-url="{{ site.baseUrl }}">
+  <wallpaper-filters></wallpaper-filters>
+  <div class="wallpaper-grid" role="list" aria-label="Wallpaper gallery">
+    {% for item in wallpapers.items %}
+    <wallpaper-card
+      data-id="{{ item.id }}"
+      data-src="{{ ('/' + item.src) | url }}"
+      data-thumb="{{ ('/' + item.thumb) | url }}"
+      data-title="{{ item.title }}"
+      data-tags="{{ item.tags | join(',') }}"
+      data-theme="{{ item.theme }}"
+      data-size="{{ item.size }}"
+      data-width="{{ item.width }}"
+      data-height="{{ item.height }}"
+      data-bytes="{{ item.bytes }}"
+      data-ext="{{ item.ext }}"
+      role="listitem"
+    ></wallpaper-card>
+    {% endfor %}
+  </div>
+</wallpaper-gallery>

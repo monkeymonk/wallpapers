@@ -1,0 +1,13 @@
+{
+  "title": "Wallpaper Vault",
+  "description": "Personal wallpaper collection",
+  "baseUrl": "/wallpapers",
+  "theme": {
+    "accent": "#8b5cf6",
+    "bg": "#09090b",
+    "surface": "#18181b",
+    "border": "#27272a",
+    "text": "#fafafa",
+    "textMuted": "#71717a"
+  }
+}
