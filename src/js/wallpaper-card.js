@@ -75,7 +75,7 @@ class WallpaperCard extends HTMLElement {
     card.addEventListener('keydown', (e) => this._handleKeyDown(e));
     this.querySelector('.copy-btn')?.addEventListener('click', (e) => { e.stopPropagation(); this._copyUrl(); });
     this.querySelector('.download-btn')?.addEventListener('click', (e) => { e.stopPropagation(); this._download(); });
-    this.querySelector('.fav-btn')?.addEventListener('click', (e) => { e.stopPropagation(); this._dispatch('wallpaper:favorite', { id: this._data.id }); });
+    this.querySelector('.fav-btn')?.addEventListener('click', (e) => { e.stopPropagation(); this._dispatch('wallpaper:favorite', { id: this._data.id, src: this._data.src }); });
   }
 
   _setupLazyLoad() {
@@ -140,7 +140,7 @@ class WallpaperCard extends HTMLElement {
   _handleKeyDown(e) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this._dispatch('wallpaper:preview', this._data); }
     if (e.key === 'd') { e.preventDefault(); this._download(); }
-    if (e.key === 'f') { e.preventDefault(); this._dispatch('wallpaper:favorite', { id: this._data.id }); }
+    if (e.key === 'f') { e.preventDefault(); this._dispatch('wallpaper:favorite', { id: this._data.id, src: this._data.src }); }
   }
 
   _dispatch(name, detail) {

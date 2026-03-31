@@ -198,6 +198,15 @@ html.dark .view-tab[aria-selected="true"] { background: var(--border); }
 /* Tag row */
 .tag-row { display: flex; align-items: flex-start; gap: 0.5rem; margin-top: 0.75rem; }
 .tag-toggle { flex-shrink: 0; margin-top: 0.125rem; }
+.tag-toggle.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.tag-toggle.is-active:hover {
+  color: #fff;
+  border-color: var(--accent);
+}
 
 /* Size filter row */
 .size-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }

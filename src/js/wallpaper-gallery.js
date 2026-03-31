@@ -6,12 +6,36 @@ function loadSet(key) {
 }
 function saveSet(key, set) { localStorage.setItem(key, JSON.stringify([...set])); }
 
+function normalizeFavorites(storedFavorites, items) {
+  const favorites = new Set();
+  const itemsById = new Map();
+  const validSrcs = new Set(items.map((item) => item.src));
+
+  items.forEach((item) => {
+    const matches = itemsById.get(item.id) || [];
+    matches.push(item);
+    itemsById.set(item.id, matches);
+  });
+
+  storedFavorites.forEach((value) => {
+    if (validSrcs.has(value)) {
+      favorites.add(value);
+      return;
+    }
+
+    const legacyMatches = itemsById.get(value) || [];
+    legacyMatches.forEach((item) => favorites.add(item.src));
+  });
+
+  return favorites;
+}
+
 class WallpaperGallery extends HTMLElement {
   constructor() {
     super();
     this._items = [];
     this._filteredItems = [];
-    this._favorites = loadSet(FAVORITES_KEY);
+    this._favorites = new Set();
     this._query = '';
     this._selectedThemes = [];
     this._selectedSizes = [];
@@ -30,6 +54,8 @@ class WallpaperGallery extends HTMLElement {
     this._items.forEach(item => {
       item._search = `${item.title} ${(item.tags || []).join(' ')} ${item.theme} ${item.size}`.toLowerCase();
     });
+    this._favorites = normalizeFavorites(loadSet(FAVORITES_KEY), this._items);
+    saveSet(FAVORITES_KEY, this._favorites);
 
     this._allThemes = Array.from(new Set(this._items.map(i => i.theme).filter(Boolean))).sort();
 
@@ -39,7 +65,7 @@ class WallpaperGallery extends HTMLElement {
     this._filteredItems = [...this._items];
     this._filters = this.querySelector('wallpaper-filters');
 
-    this._cards.forEach(card => { card.favorite = this._favorites.has(card.data.id); });
+    this._cards.forEach(card => { card.favorite = this._favorites.has(card.data.src); });
     this._updateFilters();
 
     this.addEventListener('wallpaper:filter', (e) => this._onFilter(e.detail));
@@ -48,7 +74,7 @@ class WallpaperGallery extends HTMLElement {
     this.addEventListener('wallpaper:toast', (e) => this._showToast(e.detail.message));
     this.addEventListener('wallpaper:lightbox-close', () => this._lightbox.close());
     this.addEventListener('wallpaper:lightbox-change', (e) => {
-      this._lightbox.updateFavorite(this._favorites.has(e.detail.id));
+      this._lightbox.updateFavorite(this._favorites.has(e.detail.src));
     });
   }
 
@@ -65,7 +91,7 @@ class WallpaperGallery extends HTMLElement {
     this._cards.forEach(card => {
       const item = card.data;
       let visible = true;
-      if (this._viewMode === 'favorites') visible = this._favorites.has(item.id);
+      if (this._viewMode === 'favorites') visible = this._favorites.has(item.src);
       if (visible && q) visible = item._search.includes(q);
       if (visible && this._selectedThemes.length > 0) visible = this._selectedThemes.includes(item.theme);
       if (visible && this._selectedSizes.length > 0) visible = this._selectedSizes.includes(item.size);
@@ -74,7 +100,11 @@ class WallpaperGallery extends HTMLElement {
 
     const visibleCount = this._cards.filter(c => c.style.display !== 'none').length;
     this._filteredItems = this._items.filter((_, i) => this._cards[i].style.display !== 'none');
-    this._filters?.update({ filteredCount: visibleCount, totalCount: this._items.length, favoritesCount: this._favorites.size });
+    this._filters?.update({
+      filteredCount: visibleCount,
+      totalCount: this._items.length,
+      favoritesCount: this._cards.filter((card) => this._favorites.has(card.data.src)).length,
+    });
     this._updateEmptyState(visibleCount);
   }
 
@@ -95,17 +125,20 @@ class WallpaperGallery extends HTMLElement {
   }
 
   _onPreview(item) {
-    this._lightbox.open(item, this._filteredItems, this._favorites.has(item.id));
+    this._lightbox.open(item, this._filteredItems, this._favorites.has(item.src));
   }
 
-  _onFavorite({ id }) {
-    if (this._favorites.has(id)) this._favorites.delete(id);
-    else this._favorites.add(id);
+  _onFavorite({ id, src }) {
+    const key = src || this._items.find((item) => item.id === id)?.src;
+    if (!key) return;
+    if (this._favorites.has(key)) this._favorites.delete(key);
+    else this._favorites.add(key);
     saveSet(FAVORITES_KEY, this._favorites);
-    const card = this._cards.find(c => c.data.id === id);
-    if (card) card.favorite = this._favorites.has(id);
-    if (this._lightbox.isOpen) this._lightbox.updateFavorite(this._favorites.has(id));
-    this._filters?.update({ favoritesCount: this._favorites.size });
+    this._cards
+      .filter((card) => card.data.src === key)
+      .forEach((card) => { card.favorite = this._favorites.has(key); });
+    if (this._lightbox.isOpen) this._lightbox.updateFavorite(this._favorites.has(key));
+    this._filters?.update({ favoritesCount: this._cards.filter((card) => this._favorites.has(card.data.src)).length });
     if (this._viewMode === 'favorites') this._applyFilters();
   }
 
@@ -114,7 +147,7 @@ class WallpaperGallery extends HTMLElement {
       allThemes: this._allThemes,
       totalCount: this._items.length,
       filteredCount: this._items.length,
-      favoritesCount: this._favorites.size,
+      favoritesCount: this._cards.filter((card) => this._favorites.has(card.data.src)).length,
     });
   }
 

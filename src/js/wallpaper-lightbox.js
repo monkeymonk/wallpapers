@@ -108,7 +108,7 @@ class WallpaperLightbox extends HTMLElement {
     this.querySelector('.lightbox-close').addEventListener('click', () => this._emitClose());
     this.querySelector('.lightbox-nav-prev')?.addEventListener('click', () => this._navigate(-1));
     this.querySelector('.lightbox-nav-next')?.addEventListener('click', () => this._navigate(1));
-    this.querySelector('.lb-fav-btn').addEventListener('click', () => this._dispatch('wallpaper:favorite', { id: d.id }));
+    this.querySelector('.lb-fav-btn').addEventListener('click', () => this._dispatch('wallpaper:favorite', { id: d.id, src: d.src }));
     this.querySelector('.lb-dl-btn').addEventListener('click', () => this._download());
     this.querySelectorAll('.lightbox-copy-btn').forEach(btn => {
       btn.addEventListener('click', () => this._copyUrl());
@@ -121,7 +121,7 @@ class WallpaperLightbox extends HTMLElement {
     if (newIndex < 0 || newIndex >= this._items.length) return;
     this._currentIndex = newIndex;
     this._item = this._items[newIndex];
-    this._dispatch('wallpaper:lightbox-change', { id: this._item.id });
+    this._dispatch('wallpaper:lightbox-change', { id: this._item.id, src: this._item.src });
     this._render();
     this.querySelector('.lightbox')?.focus();
   }
@@ -171,7 +171,7 @@ class WallpaperLightbox extends HTMLElement {
     }
     if (!e.ctrlKey && !e.metaKey) {
       if (e.key === 'd') { e.preventDefault(); this._download(); }
-      if (e.key === 'f') { e.preventDefault(); this._dispatch('wallpaper:favorite', { id: this._item.id }); }
+      if (e.key === 'f') { e.preventDefault(); this._dispatch('wallpaper:favorite', { id: this._item.id, src: this._item.src }); }
     }
   }
 

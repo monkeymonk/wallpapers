@@ -33,6 +33,7 @@ class WallpaperFilters extends HTMLElement {
     if (filteredCount !== undefined) this._filteredCount = filteredCount;
     if (favoritesCount !== undefined) this._favoritesCount = favoritesCount;
     this._renderThemes();
+    this._renderThemeToggle();
     this._renderCount();
     this._renderViewTabs();
   }
@@ -111,6 +112,7 @@ class WallpaperFilters extends HTMLElement {
     this.querySelectorAll('.view-tab').forEach(tab => {
       tab.addEventListener('click', () => { this._viewMode = tab.dataset.mode; this._renderViewTabs(); this._emitFilter(); });
     });
+    this._renderThemeToggle();
     this._updateClearBtn();
   }
 
@@ -125,9 +127,19 @@ class WallpaperFilters extends HTMLElement {
         const theme = btn.dataset.theme;
         this._themes = this._themes.includes(theme) ? this._themes.filter(t => t !== theme) : [...this._themes, theme];
         btn.setAttribute('aria-pressed', this._themes.includes(theme));
+        this._renderThemeToggle();
         this._updateClearBtn(); this._syncURL(); this._emitFilter();
       });
     });
+  }
+
+  _renderThemeToggle() {
+    const btn = this.querySelector('.tag-toggle');
+    if (!btn) return;
+    const hasThemes = this._themes.length > 0;
+    btn.classList.toggle('is-active', hasThemes);
+    btn.setAttribute('aria-pressed', hasThemes);
+    btn.textContent = hasThemes ? `Themes (${this._themes.length})` : 'Themes';
   }
 
   _renderSizes() {
